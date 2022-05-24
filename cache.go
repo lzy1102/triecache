@@ -164,3 +164,20 @@ func (c *Cache) Scan(pattern string) ([]string, error) {
 	nodes := node.getChildKeys(pattern[0 : len(pattern)-1])
 	return nodes, nil
 }
+
+func (c *Cache) ExPire(key string, ex time.Duration) error {
+	var node *treeNode
+	node = c.root
+	for i := 0; i < len(key); i++ {
+		tmp := node.search(i, string(key[i]))
+		if tmp == nil {
+			return fmt.Errorf("not key")
+		}
+		node = tmp
+	}
+	if node.Value == nil {
+		return fmt.Errorf("not value")
+	}
+	node.ExTime = time.Now().Unix() + int64(ex.Seconds())
+	return nil
+}
