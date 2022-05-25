@@ -8,7 +8,9 @@ triecache是一个内存中的 key  -  value 缓存，用法类似redis，对于
 
 
 
-`go get -u github.com/lzy1102/triecache`
+```
+go get -u github.com/lzy1102/triecache
+```
 
 
 
