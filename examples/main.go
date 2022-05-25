@@ -1,45 +1,41 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/lzy1102/triecache"
 	"time"
 )
 
 func main() {
-	key := "lizhiyong123"
-	key2 := "lizhiyong456"
+	key := "hellofdafas123"
+	key2 := "helloerqwr456"
 	value := 10
-	c := NewCache()
+	var c triecache.Cache
+	c = triecache.New(time.Minute*5, time.Second*10)
 	err := c.Set(key, value, time.Second*10)
 	if err != nil {
-		return
+		panic(err)
 	}
-	c.Set(key2, value, time.Second*10)
+	c.Set(key2, value, time.Second)
+	time.Sleep(time.Second * 2)
 	get, err := c.Get(key)
 	if err != nil {
-		return
+		fmt.Println(err)
 	}
 	fmt.Println("key ", key, "  value ", get)
 
 	get, err = c.Get(key2)
 	if err != nil {
-		return
+		fmt.Println(err)
 	}
 	fmt.Println("key2 ", key2, "  value2 ", get)
-	scan, err := c.Scan("lizhiyong*")
+	keys, err := c.Keys("hello*")
 	if err != nil {
-		return
+		fmt.Println(err)
 	}
-	fmt.Println(scan)
-	for _, s := range scan {
+	fmt.Println("keys ", keys)
+	for _, s := range keys {
 		v, _ := c.Get(s)
 		fmt.Println(s, v)
 	}
-	marshal, err := json.Marshal(c.root)
-	if err != nil {
-		return
-	}
-	ioutil.WriteFile("root.json", marshal, 777)
 }

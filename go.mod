@@ -1,5 +1,3 @@
-module treecache
+module github.com/lzy1102/triecache
 
 go 1.17
-
-require github.com/google/uuid v1.3.0
