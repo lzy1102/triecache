@@ -12,7 +12,7 @@ type cache struct {
 	polling time.Duration
 }
 
-func New(extime time.Duration, polling time.Duration) *cache {
+func New(extime time.Duration, polling time.Duration) Cache {
 	c := new(cache)
 	c.root = newRootNode()
 	c.extime = extime
