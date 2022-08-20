@@ -37,6 +37,6 @@ func main() {
 	for _, s := range keys {
 		v, _ := c.Get(s)
 		fmt.Println(s, v)
+		//c.Delete(s)
 	}
-	time.Sleep(time.Second * 5)
 }

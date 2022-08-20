@@ -7,6 +7,7 @@ import (
 type Cache interface {
 	Set(string, interface{}, time.Duration) error
 	Get(string) (interface{}, error)
+	Delete(string) error
 	Keys(string) ([]string, error)
 	Expire(string, time.Duration) error
 	TTL(string) (int64, error)

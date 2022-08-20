@@ -6,31 +6,31 @@ import (
 	"time"
 )
 
-type cache struct {
-	root    *treeNode
-	extime  time.Duration
-	polling time.Duration
+type CacheInfo struct {
+	Root    *TreeNode     `json:"root"  bson:"root"`
+	Extime  time.Duration `json:"extime"  bson:"extime" jsonapi:"extime"`
+	Polling time.Duration `json:"polling" bson:"polling"`
 }
 
 func New(extime time.Duration, polling time.Duration) Cache {
-	c := new(cache)
-	c.root = newRootNode()
-	c.extime = extime
-	c.polling = polling
+	c := new(CacheInfo)
+	c.Root = newRootNode()
+	c.Extime = extime
+	c.Polling = polling
 	go c.ticker()
 	return c
 }
 
-func (c *cache) ticker() {
-	tic := time.NewTicker(c.polling)
+func (c *CacheInfo) ticker() {
+	tic := time.NewTicker(c.Polling)
 	for range tic.C {
-		c.root.checkExpire()
+		c.Root.checkExpire()
 	}
 }
 
-func (c *cache) find(key string) *treeNode {
-	var node *treeNode
-	node = c.root
+func (c *CacheInfo) find(key string) *TreeNode {
+	var node *TreeNode
+	node = c.Root
 	for i := 0; i < len(key); i++ {
 		tmp := node.search(i, string(key[i]))
 		if tmp == nil {
@@ -46,9 +46,9 @@ func (c *cache) find(key string) *treeNode {
 	return node
 }
 
-func (c *cache) Set(key string, value interface{}, ex time.Duration) error {
+func (c *CacheInfo) Set(key string, value interface{}, ex time.Duration) error {
 	if &ex == nil {
-		ex = c.extime
+		ex = c.Extime
 	}
 	node := c.find(key)
 	if node == nil {
@@ -58,7 +58,7 @@ func (c *cache) Set(key string, value interface{}, ex time.Duration) error {
 	return nil
 }
 
-func (c *cache) Get(key string) (interface{}, error) {
+func (c *CacheInfo) Get(key string) (interface{}, error) {
 	node := c.find(key)
 	if node == nil {
 		return nil, fmt.Errorf("not key")
@@ -73,7 +73,15 @@ func (c *cache) Get(key string) (interface{}, error) {
 	return node.Value, nil
 }
 
-func (c *cache) Keys(pattern string) ([]string, error) {
+func (c *CacheInfo) Delete(key string) error {
+	node := c.find(key)
+	if node != nil {
+		node.del()
+	}
+	return nil
+}
+
+func (c *CacheInfo) Keys(pattern string) ([]string, error) {
 	if pattern[len(pattern)-1] != '*' {
 		return nil, fmt.Errorf("not *")
 	}
@@ -87,9 +95,9 @@ func (c *cache) Keys(pattern string) ([]string, error) {
 	return nodes, nil
 }
 
-func (c *cache) Expire(key string, ex time.Duration) error {
+func (c *CacheInfo) Expire(key string, ex time.Duration) error {
 	if &ex == nil {
-		ex = c.extime
+		ex = c.Extime
 	}
 	node := c.find(key)
 	if node == nil {
@@ -102,7 +110,7 @@ func (c *cache) Expire(key string, ex time.Duration) error {
 	return nil
 }
 
-func (c *cache) TTL(key string) (int64, error) {
+func (c *CacheInfo) TTL(key string) (int64, error) {
 	node := c.find(key)
 	if node == nil {
 		return 0, fmt.Errorf("not key")
@@ -113,7 +121,7 @@ func (c *cache) TTL(key string) (int64, error) {
 	return node.ExTime - time.Now().Unix(), nil
 }
 
-func (c *cache) GetInt64(key string) (int64, error) {
+func (c *CacheInfo) GetInt64(key string) (int64, error) {
 	node := c.find(key)
 	if node == nil {
 		return 0, fmt.Errorf("not key")
@@ -132,7 +140,7 @@ func (c *cache) GetInt64(key string) (int64, error) {
 	return result, nil
 }
 
-func (c *cache) GetFloat64(key string) (float64, error) {
+func (c *CacheInfo) GetFloat64(key string) (float64, error) {
 	node := c.find(key)
 	if node == nil {
 		return 0, fmt.Errorf("not key")
@@ -151,9 +159,9 @@ func (c *cache) GetFloat64(key string) (float64, error) {
 	return result, nil
 }
 
-func (c *cache) Incr(key string, ex time.Duration) (int64, error) {
+func (c *CacheInfo) Incr(key string, ex time.Duration) (int64, error) {
 	if &ex == nil {
-		ex = c.extime
+		ex = c.Extime
 	}
 	node := c.find(key)
 	if node == nil {
@@ -171,9 +179,9 @@ func (c *cache) Incr(key string, ex time.Duration) (int64, error) {
 	return result + 1, nil
 }
 
-func (c *cache) IncrBy(key string, value int64, ex time.Duration) (int64, error) {
+func (c *CacheInfo) IncrBy(key string, value int64, ex time.Duration) (int64, error) {
 	if &ex == nil {
-		ex = c.extime
+		ex = c.Extime
 	}
 	node := c.find(key)
 	if node == nil {
@@ -191,9 +199,9 @@ func (c *cache) IncrBy(key string, value int64, ex time.Duration) (int64, error)
 	return result + value, nil
 }
 
-func (c *cache) Decr(key string, ex time.Duration) (int64, error) {
+func (c *CacheInfo) Decr(key string, ex time.Duration) (int64, error) {
 	if &ex == nil {
-		ex = c.extime
+		ex = c.Extime
 	}
 	node := c.find(key)
 	if node == nil {
@@ -211,9 +219,9 @@ func (c *cache) Decr(key string, ex time.Duration) (int64, error) {
 	return result - 1, nil
 }
 
-func (c *cache) DecrBy(key string, value int64, ex time.Duration) (int64, error) {
+func (c *CacheInfo) DecrBy(key string, value int64, ex time.Duration) (int64, error) {
 	if &ex == nil {
-		ex = c.extime
+		ex = c.Extime
 	}
 	node := c.find(key)
 	if node == nil {
