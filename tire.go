@@ -1,7 +1,6 @@
 package triecache
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -25,6 +24,7 @@ func newRootNode() *treeNode {
 	root.ExTime = -1
 	root.Children = []*treeNode{}
 	root.mu = &sync.Mutex{}
+
 	return root
 }
 
@@ -43,13 +43,8 @@ func (n *treeNode) search(index int, key string) (node *treeNode) {
 		return n
 	}
 	for _, v := range n.Children {
-		if v.Key == key {
+		if v.search(v.Index, key) != nil {
 			return v
-		} else {
-			node = v.search(index, key)
-			if node != nil && node.Value == key {
-				return node
-			}
 		}
 	}
 	return node
@@ -74,7 +69,15 @@ func (n *treeNode) addChild(node *treeNode) {
 		n.Children = []*treeNode{}
 	}
 	node.Parent = n
-	n.Children = append(n.Children, node)
+	have := false
+	for _, child := range n.Children {
+		if child.Key == node.Key {
+			have = true
+		}
+	}
+	if have == false {
+		n.Children = append(n.Children, node)
+	}
 }
 
 func (n *treeNode) delete(index int, key string) {
@@ -98,21 +101,26 @@ func (n *treeNode) nodeAdd(index int, key string, child *treeNode) {
 }
 
 func (n *treeNode) getChildKeys(key string, node *[]string) {
-	fmt.Println("get child keys ", key)
+	//if len(key)-1 != n.Index {
+	//	return
+	//}
 	if n.ExTime < time.Now().Unix() {
 		n.del()
 	}
 	for _, v := range n.Children {
+		if v == nil {
+			continue
+		}
 		if v.ExTime < time.Now().Unix() {
 			v.del()
 		}
 		if v.Value != nil {
-			fmt.Println("child result   ", key+v.Key)
 			*node = append(*node, key+v.Key)
+			return
+		} else {
+			v.getChildKeys(key+v.Key, node)
 		}
-		v.getChildKeys(key+v.Key, node)
 	}
-
 }
 
 func (n *treeNode) checkExpire() {

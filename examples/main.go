@@ -17,7 +17,7 @@ func main() {
 		panic(err)
 	}
 	c.Set(key2, value, time.Second)
-	time.Sleep(time.Second * 2)
+
 	get, err := c.Get(key)
 	if err != nil {
 		fmt.Println(err)
@@ -38,4 +38,5 @@ func main() {
 		v, _ := c.Get(s)
 		fmt.Println(s, v)
 	}
+	time.Sleep(time.Second * 5)
 }
