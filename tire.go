@@ -1,6 +1,7 @@
 package triecache
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -96,7 +97,8 @@ func (n *treeNode) nodeAdd(index int, key string, child *treeNode) {
 	n.search(index, key).addChild(child)
 }
 
-func (n *treeNode) getChildKeys(key string) (node []string) {
+func (n *treeNode) getChildKeys(key string, node *[]string) {
+	fmt.Println("get child keys ", key)
 	if n.ExTime < time.Now().Unix() {
 		n.del()
 	}
@@ -105,11 +107,12 @@ func (n *treeNode) getChildKeys(key string) (node []string) {
 			v.del()
 		}
 		if v.Value != nil {
-			node = append(node, key+v.Key)
+			fmt.Println("child result   ", key+v.Key)
+			*node = append(*node, key+v.Key)
 		}
-		node = append(node, v.getChildKeys(key+v.Key)...)
+		v.getChildKeys(key+v.Key, node)
 	}
-	return node
+
 }
 
 func (n *treeNode) checkExpire() {

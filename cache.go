@@ -75,14 +75,18 @@ func (c *cache) Get(key string) (interface{}, error) {
 }
 
 func (c *cache) Keys(pattern string) ([]string, error) {
+	fmt.Println("pattern", pattern)
 	if pattern[len(pattern)-1] != '*' {
 		return nil, fmt.Errorf("not *")
 	}
+	fmt.Println("start keys", pattern[:len(pattern)-1])
 	node := c.find(pattern[:len(pattern)-1])
 	if node == nil {
 		return nil, fmt.Errorf("not key")
 	}
-	nodes := node.getChildKeys(pattern[:len(pattern)-1])
+	var nodes []string
+	node.getChildKeys(pattern[:len(pattern)-1], &nodes)
+	fmt.Println("nodes ", nodes)
 	return nodes, nil
 }
 

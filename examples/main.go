@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	key := "hellofdafas123"
-	key2 := "helloerqwr456"
+	key := "TcpStream&&Down&&192.168.1.104&&139.155.249.48&&8181(intermapper)&&55660&&1206525595&&2961302792&&1412&&1660286309000021196"
+	key2 := "TcpStream&&Down&&192.168.1.104&&139.155.249.48&&8181(intermapper)&&55660&&1206525595&&2961304204&&1412&&1660286309000021319"
 	value := 10
 	var c triecache.Cache
-	c = triecache.New(time.Minute*5, time.Second*10)
+	c = triecache.New(time.Minute, time.Second*5)
 	err := c.Set(key, value, time.Second*10)
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println("key2 ", key2, "  value2 ", get)
-	keys, err := c.Keys("hello*")
+	keys, err := c.Keys("TcpStream&&Down&&192.168.1.104&&139.155.249.48&&8181(intermapper)&&55660&&1206525595&&*")
 	if err != nil {
 		fmt.Println(err)
 	}
