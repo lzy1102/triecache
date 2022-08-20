@@ -7,39 +7,39 @@ import (
 	"time"
 )
 
-type TreeNode struct {
+type treeNode struct {
 	Key      string      `json:"key"  bson:"key" `
 	Value    interface{} `json:"value" bson:"value" `
 	Index    int         `json:"index" bson:"index" `
 	ExTime   int64       `json:"ex_time" bson:"ex_time" `
-	Parent   *TreeNode   `json:"parent" bson:"parent" `
-	Children []*TreeNode `json:"children" bson:"children" `
+	Parent   *treeNode   `json:"parent" bson:"parent" `
+	Children []*treeNode `json:"children" bson:"children" `
 	Mu       *sync.Mutex
 }
 
-func newRootNode() *TreeNode {
-	root := new(TreeNode)
+func newRootNode() *treeNode {
+	root := new(treeNode)
 	root.Value = ""
 	root.Index = -1
 	root.Parent = nil
 	root.ExTime = -1
-	root.Children = []*TreeNode{}
+	root.Children = []*treeNode{}
 	root.Mu = &sync.Mutex{}
 
 	return root
 }
 
-func newNode(key string, value interface{}, index int) *TreeNode {
-	node := new(TreeNode)
+func newNode(key string, value interface{}, index int) *treeNode {
+	node := new(treeNode)
 	node.Key = key
 	node.Value = value
 	node.Index = index
-	node.Children = []*TreeNode{}
+	node.Children = []*treeNode{}
 	node.Mu = &sync.Mutex{}
 	return node
 }
 
-func (n *TreeNode) marshal() []byte {
+func (n *treeNode) marshal() []byte {
 	marshal, err := json.Marshal(n)
 	if err != nil {
 		panic(err)
@@ -47,7 +47,7 @@ func (n *TreeNode) marshal() []byte {
 	return marshal
 }
 
-func (n *TreeNode) search(index int, key string) (node *TreeNode) {
+func (n *treeNode) search(index int, key string) (node *treeNode) {
 	if n.Key == key && index == n.Index {
 		return n
 	}
@@ -59,7 +59,7 @@ func (n *TreeNode) search(index int, key string) (node *TreeNode) {
 	return node
 }
 
-func (n *TreeNode) fuzzySearch(key string, node *[]TreeNode) {
+func (n *treeNode) fuzzySearch(key string, node *[]treeNode) {
 	if strings.Contains(n.Key, key) {
 		if node != nil {
 			*node = append(*node, *n)
@@ -70,22 +70,22 @@ func (n *TreeNode) fuzzySearch(key string, node *[]TreeNode) {
 	}
 }
 
-func (n *TreeNode) addChild(node *TreeNode) {
+func (n *treeNode) addChild(node *treeNode) {
 	n.Mu.Lock()
 	defer n.Mu.Unlock()
 	node.Index = n.Index + 1
 	if n.Children == nil {
-		n.Children = []*TreeNode{}
+		n.Children = []*treeNode{}
 	}
 	node.Parent = n
 	n.Children = append(n.Children, node)
 }
 
-func (n *TreeNode) nodeAdd(index int, key string, child *TreeNode) {
+func (n *treeNode) nodeAdd(index int, key string, child *treeNode) {
 	n.search(index, key).addChild(child)
 }
 
-func (n *TreeNode) getChildKeys(key string, node *[]string) {
+func (n *treeNode) getChildKeys(key string, node *[]string) {
 	//if len(key)-1 != n.Index {
 	//	return
 	//}
@@ -108,7 +108,7 @@ func (n *TreeNode) getChildKeys(key string, node *[]string) {
 	}
 }
 
-func (n *TreeNode) checkExpire() {
+func (n *treeNode) checkExpire() {
 	for _, v := range n.Children {
 		if v.ExTime < time.Now().Unix() && v.Value != nil {
 			v.del()
@@ -119,14 +119,14 @@ func (n *TreeNode) checkExpire() {
 	}
 }
 
-func (n *TreeNode) set(value interface{}, ex time.Duration) {
+func (n *treeNode) set(value interface{}, ex time.Duration) {
 	n.Mu.Lock()
 	defer n.Mu.Unlock()
 	n.Value = value
 	n.ExTime = time.Now().Unix() + int64(ex.Seconds())
 }
 
-func (n *TreeNode) del() {
+func (n *treeNode) del() {
 	n.Mu.Lock()
 	defer n.Mu.Unlock()
 	n.Value = nil
