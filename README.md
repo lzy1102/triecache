@@ -1,6 +1,6 @@
 # triecache
 
-triecache是一个内存中的 key  -  value 缓存，用法类似redis，对于一些想要临时存储一些数据，但是没必要接入redis的场景适用；原理是通过树形结构实现的，相较于根据map[string]interface{} 的  go-cache 等，实现了 redis 中 keys的功能
+triecache是一个内存中的 key  -  value 缓存，用法类似redis，对于一些想要临时存储一些数据，但是没必要接入redis的场景适用；原理是通过树形结构实现的，相较于根据map[string]interface{} 的  go-cache 等，实现了前缀搜索的功能，例如 key: abcdefg   可以使用 abc*搜索
 
 
 
